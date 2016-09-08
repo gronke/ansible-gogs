@@ -1,0 +1,41 @@
+---
+
+- name: attachment upload dir exists
+  file:
+    path: '{{ _gogs_config.attachment.path }}'
+    state: directory
+    owner: '{{gogs_user}}'
+    group: '{{gogs_group}}'
+    mode: 0770
+  when: _gogs_config.attachment.enabled == true
+
+- name: gogs_dir permissions are properly set
+  file:
+    path: '{{gogs_dir}}'
+    owner: 'root'
+    group: '{{gogs_group}}'
+
+- name: gogs custom conf dir exists
+  file:
+    path: '{{ gogs_dir }}/custom/conf'
+    state: directory
+    owner: 'root'
+    group: '{{gogs_group}}'
+    mode: 0750
+
+- name: gogs data dir exists
+  file:
+    path: '{{ gogs_dir }}/data'
+    state: directory
+    owner: '{{gogs_user}}'
+    group: '{{gogs_group}}'
+    mode: 0770
+
+- name: gogs is configured
+  template:
+    src: app.ini.j2
+    dest: '{{gogs_dir}}/custom/conf/app.ini'
+    owner: 'root'
+    group: '{{gogs_user}}'
+    mode: 0640
+  notify: restart gogs

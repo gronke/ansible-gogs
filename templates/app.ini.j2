@@ -1,0 +1,14 @@
+{% for gogs_config_main_name, gogs_config_main in _gogs_config.iteritems() %}
+{% if((gogs_config_main == true) or (gogs_config_main == false) or (gogs_config_main is number) or (gogs_config_main is string)) %}
+{{ gogs_config_main_name | upper }}: {{ gogs_config_main }}
+{% endif %}
+{% endfor %}
+{% for gogs_config_main_name, gogs_config_main in _gogs_config.iteritems() %}
+{% if(not((gogs_config_main == true) or (gogs_config_main == false) or (gogs_config_main is number) or (gogs_config_main is string))) %}
+
+[{{ gogs_config_main_name | lower }}]
+{% for gogs_config_sub_name, gogs_config_sub in gogs_config_main.iteritems() %}
+{{ gogs_config_sub_name | upper }}: {{ gogs_config_sub }}
+{% endfor %}
+{% endif %}
+{% endfor %}

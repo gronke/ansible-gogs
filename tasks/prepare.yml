@@ -1,0 +1,20 @@
+---
+
+- name: gogs group exists
+  group:
+    name: '{{gogs_group}}'
+    state: present
+
+- name: gogs user exists
+  user:
+    name: '{{gogs_user}}'
+    group: '{{gogs_group}}'
+    home: '{{gogs_user_home}}'
+    state: present
+
+- name: git is installed
+  apt:
+    name: git-core
+    state: latest
+    update_cache: yes
+    cache_valid_time: 3600

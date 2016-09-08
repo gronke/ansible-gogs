@@ -1,0 +1,75 @@
+---
+
+gogs_app_name: "Gogs: Go Git Service"
+gogs_domain: "git.example.com"
+
+gogs_user: git
+gogs_group: "{{ gogs_user }}"
+gogs_user_home: "/home/{{ gogs_user }}"
+gogs_dir: "{{ gogs_user_home }}/gogs"
+
+gogs_version: "v0.9.97"
+gogs_archive: "linux_amd64.tar.gz"
+gogs_binary_url: "https://github.com/gogits/gogs/releases/download/{{gogs_version}}/{{gogs_archive}}"
+gogs_archive_checksum: "sha256:41b0438f3e183f895aa459f5ea90153cbd448edc0ab241cff670e5fea193f1c1"
+
+_gogs_smtp_host_string: "{{ '' if (gogs_smtp is not defined) else '{{ gogs_smtp.host }}:{{ gogs_smtp.port | default(465)}}' }}"
+
+gogs_default_config:
+  
+  user: '{{ gogs_config.user | default(gogs_user) }}'
+
+  server:
+    protocol: http
+    #addr: '0.0.0.0'
+    #http_port: 3000
+    domain: "{{ gogs_domain }}"
+    #root_url: '%(PROTOCOL)s://git.%(DOMAIN)s:%(HTTP_PORT)s/'
+  
+  service:
+    disable_registration: true
+    register_email_confim: "{{ gogs_smtp is defined }}"
+    require_signin_view: false
+
+  database:
+
+    # MySQL
+    db_type: mysql
+    host: "127.0.0.1"
+    name: "gogs"
+    user: "root"
+    passwd: ""
+
+    # # PostgreSQL
+    # ssl_mode: disable
+
+    # # SQLite3
+    # path: "data/gogs.db"
+
+  security:
+    install_lock: true
+    secret_key: "{{ gogs_secret_key }}"
+
+  picture:
+    disable_gravatar: true
+
+  attachment:
+    enabled: true
+    path: "{{ gogs_dir }}/data/attachments"
+
+  mail:
+    enabled: "{{ gogs_smtp is defined }}"
+    from: "noreply+gogs@%(DOMAIN)s"
+
+    # SMTP
+    host: "{{ _gogs_smtp_host_string }}"
+    user: "{{ '' if (gogs_smtp is not defined) else gogs_smtp.user | default('') }}"
+    passwd: "{{ '' if (gogs_smtp is not defined) else gogs_smtp.password | default('') }}"
+    helo_hostname: "{{ '' if (gogs_smtp is not defined) else gogs_smtp.helo_hostname | default(gogs_domain) }}"
+
+  other:
+    show_footer_version: false
+
+  log:
+    mode: file
+    path: "{{ gogs_dir }}/logs"

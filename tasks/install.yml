@@ -1,0 +1,69 @@
+---
+
+- name: gogs was already downloaded
+  stat:
+    path: '{{ gogs_user_home }}/{{ gogs_archive }}'
+    checksum_algorithm: sha256
+    get_checksum: true
+    get_md5: false
+  register: _gogs_archive_download_stat
+
+- name: download gogs
+  get_url:
+    url: "{{ gogs_binary_url }}"
+    dest: "{{ gogs_user_home }}/{{ gogs_archive }}"
+    owner: "{{ gogs_user }}"
+    group: "{{ gogs_user }}"
+    checksum: "{{ gogs_archive_checksum }}"
+  register: _gogs_downloaded
+  when: (_gogs_archive_download_stat.stat.exists == false) or (_gogs_archive_download_stat.stat.checksum != gogs_archive_checksum)
+
+- stat:
+    path: '{{ gogs_dir }}/gogs'
+  register: _gogs_binary_stat
+
+- name: extract gogs
+  unarchive:
+    src: "{{ gogs_user_home }}/{{ gogs_archive }}"
+    dest: "{{ gogs_user_home }}"
+    group: "{{ gogs_user }}"
+    owner: "{{ gogs_user }}"
+    copy: no
+  when: ((_gogs_downloaded is defined) and (_gogs_downloaded.changed)) or not _gogs_binary_stat.stat.exists
+
+- name: gogs_dir file permissions are correct
+  file:
+    path: '{{ gogs_dir }}'
+    recurse: yes
+    owner: '{{gogs_user}}'
+    group: '{{gogs_group}}'
+
+- name: gogs log directory exists
+  file:
+    path: '{{ gogs_dir }}/log'
+    state: directory
+    owner: '{{gogs_user}}'
+    group: '{{gogs_group}}'
+    mode: '0770'
+
+- name: symlink gogs binary to /usr/local/bin/gogs
+  file:
+    src: "{{ gogs_user_home }}/gogs/gogs"
+    dest: "/usr/local/bin/gogs"
+    state: link
+
+- name: gogs systemd service is available
+  copy:
+    remote_src: true
+    src: '{{gogs_user_home}}/gogs/scripts/systemd/gogs.service'
+    dest: '/etc/systemd/system/gogs.service'
+    mode: 0755
+  register: gogs_systemd_installed
+
+- name: gogs service is enabled
+  service:
+    name: gogs
+    enabled: true
+  notify: restart gogs
+
+  
