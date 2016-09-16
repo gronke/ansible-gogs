@@ -1,7 +1,6 @@
 ---
 
 - set_fact: _gogs_config="{{ gogs_default_config | combine(gogs_config, recursive=True) }}"
-- debug: var="_gogs_config"
 
 - fail: msg="gogs_secret_key is required"
   when: gogs_secret_key is not defined
